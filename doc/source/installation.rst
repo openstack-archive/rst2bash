@@ -2,10 +2,11 @@
 Installation
 ============
 
-At the command line::
+- Clone the rst2bash repository.
 
-- Clone the repository
+  .. code-block:: bash
 
-    $ git clone git://git.openstack.org/openstack/rst2bash
+     $ git clone git://git.openstack.org/openstack/rst2bash
+     $ cd rst2bash
 
-- Run the parser.
+- Check the usage section for more details.

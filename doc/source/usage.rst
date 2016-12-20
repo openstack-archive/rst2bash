@@ -2,19 +2,27 @@
 Usage
 =====
 
-- To run the parser please clone the [openstack-manuals](git://git.openstack.org/openstack/openstack-manuals)
-  repository and update the configuration file.
-- Additionally, if you wish to deploy OpenStack cluster, also clone the [training-labs](git://git.openstack.org/openstack/training-labs)
-  repository.
-- Run the parser:
+- Run the parser, it will clone openstack-manuals repository, training-labs
+  repository and parse the files
 
-    $ python parser.py
+    .. code-block:: bash
+
+       $ ./tools/runparser.sh
+
+
+  Make sure to run it from the root of the directory.
+- Check the generated scripts (location in the configuration file
+  `rst2bash/conf`), copy them to training-labs:
+  `labs/osbash/scripts/` folder.
 
 - Check the generated scripts (location in the configuration file), copy them
-  to training-labs: labs/osbash/scripts/ folder.
+  to training-labs: `labs/osbash/scripts/` folder. Default configuration
+  specifies the output location at `build/scripts/`.
 - Run training labs:
 
-    $ PROVIDER=kvm ./st.py -b cluster
+    .. code-block:: bash
+
+       $ PROVIDER=kvm ./build/training-labs/labs/st.py -b cluster
 
 - Sit back, relax and see the cluster deploy.
 
