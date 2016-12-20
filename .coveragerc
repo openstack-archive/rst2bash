@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = rst2bash
+
+[report]
+ignore_errors = True
