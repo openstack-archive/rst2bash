@@ -4,9 +4,8 @@ Installation
 
 At the command line::
 
-    $ pip install rst2bash
+- Clone the repository
 
-Or, if you have virtualenvwrapper installed::
+    $ git clone git://git.openstack.org/openstack/rst2bash
 
-    $ mkvirtualenv rst2bash
-    $ pip install rst2bash
+- Run the parser.
