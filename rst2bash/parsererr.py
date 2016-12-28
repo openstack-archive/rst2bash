@@ -11,31 +11,39 @@
 #  under the License.
 
 
-class Rst2BashException(Exception):
+class Rst2BashError(Exception):
+    """Base class for exceptions for Rst2Bash module."""
 
     pass
 
 
-class MissingTagsException(Rst2BashException):
+class InvalidBlockError(Rst2BashError):
 
     pass
 
 
-class NestedDistroBlocksException(Rst2BashException):
+class MissingTagsError(Rst2BashError):
 
     pass
 
 
-class PathNotFoundException(Rst2BashException):
+class NestedDistroBlocksError(Rst2BashError):
+
+    def __init__(self, *args, **kwargs):
+        Rst2BashError.__init__(self, *args, **kwargs)
+
+
+class PathNotFoundError(Rst2BashError):
+
+    def __init__(self, *args, **kwargs):
+        Rst2BashError.__init__(self, *args, **kwargs)
+
+
+class InvalidCodeBlockError(Rst2BashError):
 
     pass
 
 
-class NoCodeBlocksException(Rst2BashException):
-
-    pass
-
-
-class InvalidOperatorException(Rst2BashException):
+class InvalidOperatorError(Rst2BashError):
 
     pass
