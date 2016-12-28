@@ -17,6 +17,9 @@ import re
 import yaml
 
 
+import exception as ParserErr
+
+
 class BlockIndex(object):
     """Creates indices which describes the location of blocks in rst file.
 
@@ -228,7 +231,8 @@ class ParseBlocks(object):
             action = 'config'
             codeBlock = self._parse_config(codeBlock)
         else:
-            raise   # TODO(dbite): Raise custom exception here.
+            msg = "Invalid command type: %s" % cmdType
+            raise ParserErr.InvalidCodeBlockError(msg)
 
         command.append(action=action, command=codeBlock)
 
@@ -289,7 +293,8 @@ class ParseBlocks(object):
         elif ">" in operator:
             operator = "mysql_exec "
         else:
-            raise           # TODO(dbite): Create custom exceptions!
+            msg = "Invalid operator: %s" % operator
+            raise ParserErr.InvalidOperatorError(msg)
 
         return operator
 
@@ -408,7 +413,10 @@ class ExtractBlocks(object):
         self.allBlocksIterator = \
             self.blocks['allBlock'].get_startindex_generator()
 
-        self._extractblocks()
+        try:
+            self._extractblocks()
+        except IndexError as err:
+            raise ParserErr.MissingTagsError(err)
 
     # Helper function for quick lookup from the blocks lookup table.
     def _block_lookup(self, allblock):
@@ -423,8 +431,8 @@ class ExtractBlocks(object):
             if blockIndex is not False:
                 return blockName, blockIndex
         else:
-            # TODO(dbite): Raise custom exception.
-            raise
+            msg = "Invalid block name: %s" % blockName
+            raise ParserErr.InvalidBlockError(msg)
 
     # Helper function for recursive-generator pattern.
     def _extractblocks(self, distro=None, path=None, distroEnd=None):
@@ -456,6 +464,11 @@ class ExtractBlocks(object):
 
         block = self.blocks[blockName]
 
+        # TODO(dbite): Implement a mechanism for locating the exact location in
+        #              the rst file at the current recursive depth. This
+        #              information should then be logged and passed via. the
+        #              exception traceback. Save required vars. in a global
+        #              variable.
         if distroEnd < block.get_start_block(blockIndex)[0]:
             distro = None
 
@@ -536,14 +549,27 @@ if __name__ == '__main__':
 
     for rst_file in rst_files:
 
-        rst_file_path = os.path.join(rst_path, rst_file)
-        print("Parsing: %s\n") % (rst_file)
-        code_blocks = ExtractBlocks(rst_file_path, bash_path)
-        code_blocks.get_indice_blocks()
+        parser_message = "\nError: XXX: Failed to parse %s to bash.\n\t    - "
+
         try:
+            rst_file_path = os.path.join(rst_path, rst_file)
+            code_blocks = ExtractBlocks(rst_file_path, bash_path)
+            code_blocks.get_indice_blocks()
             code_blocks.extract_codeblocks()
-        except Exception:
+            bashCode = code_blocks.get_bash_code()
+
+            if not code_blocks.write_bash_code():
+                msg = "Could not write to bash: %s" % rst_file_path
+                raise ParserErr.Rst2BashError(msg)
+
+        except (ParserErr.InvalidCodeBlockError,
+                ParserErr.InvalidOperatorError,
+                ParserErr.InvalidBlockError,
+                ParserErr.MissingTagsError) as ex:
+            parser_message = parser_message + repr(ex) + "\n"
+        except ParserErr.Rst2BashError as ex:
             pass
-        bashCode = code_blocks.get_bash_code()
-        if not code_blocks.write_bash_code():
-            raise Exception("Could not write to bash")
+        else:
+            parser_message = "Success :): parsed %s to bash. :D"
+        finally:
+            print(parser_message % rst_file)
