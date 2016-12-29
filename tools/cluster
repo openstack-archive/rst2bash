@@ -1,3 +1,16 @@
 #!/bin/bash
 
 echo 'WIP: To be implemented.'
+echo $@
+echo $(whoami)
+pip install -r requirements.txt --user ${whoami}
+./tools/runparser.sh
+
+labs_path=$(pwd)/build/training-labs/labs/st.py
+echo $labs_path
+
+alias sudo="echo 'No SUDO. Grow up!'";
+
+if [ "$1" = "kvm" ]; then
+    $($labs_path -b cluster -p kvm)
+fi
