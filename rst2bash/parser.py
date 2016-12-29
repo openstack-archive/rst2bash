@@ -20,6 +20,10 @@ import yaml
 import parsererr as ParserErr
 
 
+# TODO(dbite): Remove CamelCasing.
+# ------------------------------------------------------------------------------
+#   Custom data-types.
+# ------------------------------------------------------------------------------
 class BlockIndex(object):
     """Creates indices which describes the location of blocks in rst file.
 
@@ -186,6 +190,9 @@ class CodeBlock(object):
         return self.command['distro']
 
 
+# ------------------------------------------------------------------------------
+# Parser Logic.
+# ------------------------------------------------------------------------------
 class ParseBlocks(object):
     """Convert RST block to BASH code.
 
@@ -237,6 +244,8 @@ class ParseBlocks(object):
         command.append(action=action, command=codeBlock)
 
         return command
+
+# ------------------------------------------------------------------------------
 
     def _parse_inject(self, rstBlock):
         """Parse inject lines.
@@ -331,6 +340,9 @@ class ParseBlocks(object):
         return parsedCmds
 
 
+# ------------------------------------------------------------------------------
+
+
 class ExtractBlocks(object):
     """Creates required indices form the rst code."""
 
@@ -370,11 +382,15 @@ class ExtractBlocks(object):
 
         return self.filePointer.read()
 
+# ------------------------------------------------------------------------------
+
     def get_indice_blocks(self):
         """Should fetch regex strings from the right location."""
 
+        # TODO(dbite): Populate the regex strings from a configuration file.
         # Regex string for extracting particular bits from RST file.
         # For some reason I want to keep the generic RegEX strings.
+        # XXX(dbite): Figure out the index|indices confusing terms.
         searchAllBlocks = '''\.\.\s     # Look for '.. '
             (code-block::|only::|path)  # Look for required blocks
             [a-z\s/].*
@@ -405,6 +421,10 @@ class ExtractBlocks(object):
                        'pathBlock': pathBlocks,
                        'allBlock': allBlocks
                        }
+
+# ------------------------------------------------------------------------------
+#   Recursive Generator Pattern.
+# ------------------------------------------------------------------------------
 
     def extract_codeblocks(self):
         """Initialize the generator object and start the initial parsing."""
@@ -501,6 +521,8 @@ class ExtractBlocks(object):
 
         return
 
+# ------------------------------------------------------------------------------
+
     def get_bash_code(self):
         """Returns bashCode which is a list containing <CodeBlock>'s."""
 
@@ -510,6 +532,7 @@ class ExtractBlocks(object):
     def write_to_file(path, value):
         """Static method to write given content to the file."""
 
+        # TODO(dbite): Implement a file handler class.
         with open(path, 'w') as fp:
             fp.write(value)
 
@@ -530,9 +553,11 @@ class ExtractBlocks(object):
 
         return True
 
+# ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
+    # TODO(dbite): Cleanup the main function.
     with open("rst2bash/config/parser_config.yaml", 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
