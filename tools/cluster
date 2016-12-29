@@ -1,3 +1,24 @@
 #!/bin/bash
 
+set -o errexit
+
 echo 'WIP: To be implemented.'
+pip install -r requirements.txt --user ${whoami}
+./tools/runparser.sh
+
+labs_path=$(pwd)/build/training-labs/labs
+echo $labs_path
+
+function create_default_storagepool() {
+    # TODO(dbite): Update this as a feature in training-labs.
+    mkdir $HOME/.libvirt_pool
+    sudo virsh -c 'qemu:///system'  pool-define-as --name default --type dir --target $HOME/.libvirt_pool
+    sudo virsh -c 'qemu:///system' pool-start default
+}
+
+if [ "$1" = "kvm" ]; then
+    create_default_storagepool
+    cd $labs_path
+    # sed -i "s/ubuntu-16.04-server-amd64/ubuntu-14.04-server-i386/g" config/localrc
+    ./st.py -b cluster -p kvm
+fi
