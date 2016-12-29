@@ -58,7 +58,7 @@ class BlockIndex(object):
     def get_block(self, index):
         '''Returns the value of the block from the start and the end index.'''
 
-        return (self.get_start_index(index), self.getEndindex(index))
+        return (self.get_start_index(index), self.get_end_index(index))
 
     def get_start_index(self, block):
         '''Returns the index of the given block from the start index.'''
