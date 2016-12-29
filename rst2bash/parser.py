@@ -12,12 +12,48 @@
 
 
 from collections import defaultdict
+import logging
 import os
 import re
 import yaml
 
 
 import parsererr as ParserErr
+
+
+def configure_logging():
+    """Configure root logger"""
+    logger = logging.getLogger()
+
+    logger.setLevel(logging.DEBUG)
+
+    # Level name colored differently (both console and file)
+    logging.addLevelName(logging.WARNING, '\x1b[0;33m%s\x1b[0m' %
+                         logging.getLevelName(logging.WARNING))
+    logging.addLevelName(logging.ERROR, '\x1b[0;31m%s\x1b[0m' %
+                         logging.getLevelName(logging.ERROR))
+
+    # Configure console logging
+    console_log_handler = logging.StreamHandler()
+    console_log_handler.setLevel(logging.INFO)
+    # All console messages are the same color (except with colored level names)
+    console_formatter = logging.Formatter('\x1b[0;32m%(levelname)s'
+                                          '\t%(message)s\x1b[0m')
+    console_log_handler.setFormatter(console_formatter)
+    logger.addHandler(console_log_handler)
+
+    # Configure log file
+    log_file = 'rst2bash.log'
+    os.remove(log_file)
+    file_log_handler = logging.FileHandler(log_file)
+    file_log_handler.setLevel(logging.DEBUG)
+    file_formatter = logging.Formatter('%(process)s %(asctime)s.%(msecs)03d'
+                                       ' %(name)s %(levelname)s %(message)s',
+                                       datefmt="%H:%M:%S")
+    file_log_handler.setFormatter(file_formatter)
+    logger.addHandler(file_log_handler)
+
+    logger.debug("Root logger configured.")
 
 
 # TODO(dbite): Remove CamelCasing.
@@ -347,19 +383,27 @@ class ExtractBlocks(object):
 
     def __init__(self, rstFile, bashPath):
 
+        logger.info("Processing %s.", os.path.basename(rstFile))
         self.rstFile = self.get_file_contents(rstFile)
         self.blocks = None  # Lookup table.
         self.allBlocksIterator = None
         self.parseblocks = ParseBlocks()
         self.bashCode = list()
         bashFileName = os.path.basename(rstFile).replace('.rst', '.sh')
+        logger.debug("bashPath %s", bashPath)
         self.bashPath = {distro: os.path.join(path, bashFileName)
                          for distro, path in bashPath.iteritems()}
+        logger.debug("ExtractBlocks __init__ bashPath %s", self.bashPath)
 
     def __del__(self):
         """Proper handling of the file pointer."""
 
         self.filePointer.close()
+
+    def index_to_line_no(self, index):
+        """Return line number, given index into string"""
+        # Count newline characters (no newline -> line number 1)
+        return self.rstFile.count("\n", 0, index) + 1
 
     def _get_indices(self, regexStr):
         """Helper function to return a tuple containing indices.
@@ -372,7 +416,35 @@ class ExtractBlocks(object):
         indices = [index.span()
                    for index in searchBlocks.finditer(self.rstFile)]
 
+        logger.debug("_get_indices %s %s", regexStr, indices)
         return indices
+
+    def get_start_end_block(self, searchStart, searchEnd):
+        """Search file for start and stop codes
+
+        Search for start and stop codes (e.g., "only", "endonly") and
+        report an error if the numbers for both don't match.
+        """
+        start = self._get_indices(searchStart)
+        end = self._get_indices(searchEnd)
+
+        # Log information on the indices we received
+        msg = "get_start_end_block start/end mismatch:\n"
+        msg += "    regex start: {}\n".format(searchStart)
+        msg += "    regex end:   {}\n".format(searchEnd)
+        report = {}
+        for ii in start:
+            report[self.index_to_line_no(ii[0])] = "start block"
+        for ii in end:
+            report[self.index_to_line_no(ii[0])] = "end block  "
+        for ii in sorted(report):
+            msg += "    {} (line {})\n".format(report[ii], ii)
+        if len(start) == len(end):
+            logger.debug(msg)
+        else:
+            logger.error(msg)
+
+        return start, end
 
     def get_file_contents(self, filePath):
         """Return the contents of the given file."""
@@ -408,10 +480,15 @@ class ExtractBlocks(object):
         searchPath = '''\.\.\spath\s.*'''           # Look for .. path
 
         allBlocks = BlockIndex(self._get_indices(searchAllBlocks))
-        distroBlocks = BlockIndex(self._get_indices(searchDistroBlocksStart),
-                                  self._get_indices(searchDistroBlocksEnd))
-        codeBlocks = BlockIndex(self._get_indices(searchCodeBlocksStart),
-                                self._get_indices(searchCodeBlocksEnd))
+
+        startIndex, endIndex = self.get_start_end_block(
+            searchDistroBlocksStart, searchDistroBlocksEnd)
+        distroBlocks = BlockIndex(startIndex, endIndex)
+
+        startIndex, endIndex = self.get_start_end_block(
+            searchCodeBlocksStart, searchCodeBlocksEnd)
+        codeBlocks = BlockIndex(startIndex, endIndex)
+
         pathBlocks = BlockIndex(self._get_indices(searchPath))
 
         # Point to the blocks from a dictionary to create sensible index.
@@ -556,15 +633,25 @@ class ExtractBlocks(object):
 
 if __name__ == '__main__':
 
+    configure_logging()
+    logger = logging.getLogger()
+
     # TODO(dbite): Cleanup the main function.
     with open("rst2bash/config/parser_config.yaml", 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
     cwd = os.getcwd()
+    logger.debug("cwd %s", cwd)
+
     rst_path = os.path.join(cwd, cfg['rst_path'])
+    logger.debug("rst_path %s", rst_path)
+
     rst_files = cfg['rst_files']
+    logger.debug("rst_files %s", rst_files)
+
     bash_path = {distro: os.path.join(cwd, path)
                  for distro, path in cfg['bash_path'].iteritems()}
+    logger.debug("bash_path %s", bash_path)
 
     for path_value in bash_path.itervalues():
 
@@ -591,9 +678,15 @@ if __name__ == '__main__':
                 ParserErr.InvalidBlockError,
                 ParserErr.MissingTagsError) as ex:
             parser_message = parser_message + repr(ex) + "\n"
+            logger.error(repr(ex))
         except ParserErr.Rst2BashError as ex:
             pass
         else:
             parser_message = "Success :): parsed %s to bash. :D"
         finally:
             print(parser_message % rst_file)
+
+    logger.info("")
+    logger.info("Output written to:")
+    for distro in bash_path:
+        logger.info(bash_path[distro])
