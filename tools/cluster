@@ -1,3 +1,18 @@
 #!/bin/bash
 
 echo 'WIP: To be implemented.'
+echo $@
+echo $(whoami)
+pip install -r requirements.txt --user ${whoami}
+./tools/runparser.sh
+
+labs_path=$(pwd)/build/training-labs/labs/st.py
+echo $labs_path
+
+sudo apt-get install \
+    -q --option Dpkg::Options::=--force-confold --assume-yes \
+    virtinst
+
+if [ "$1" = "kvm" ]; then
+    $($labs_path -b cluster -p kvm)
+fi
