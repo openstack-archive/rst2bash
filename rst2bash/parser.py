@@ -167,11 +167,10 @@ class CodeBlock(object):
 
         path = self.command['path']
         if path:
-            path = '{0}conf={1}{0}'.format(newline, path)
-            bashcodelines = path
+            bashcodelines = '{0}conf={1}{0}'.format(newline, path)
 
         if 'config' in action:
-            command_wrapper = 'iniset_sudo '
+            command_wrapper = 'iniset_sudo $conf '
         elif 'inject' in action:
             command_wrapper = '{0}cat<< INJECT | sudo tee -a $conf{0}'
             command_wrapper = command_wrapper.format(newline)
