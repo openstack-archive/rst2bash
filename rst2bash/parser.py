@@ -58,9 +58,9 @@ def configure_logging(log_file):
 
 
 # TODO(dbite): Remove CamelCasing.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #   Custom data-types.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class BlockIndex(object):
     """Creates indices which describes the location of blocks in rst file.
 
@@ -226,9 +226,9 @@ class CodeBlock(object):
         return self.command['distro']
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Parser Logic.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class ParseBlocks(object):
     """Convert RST block to BASH code.
 
@@ -286,7 +286,7 @@ class ParseBlocks(object):
 
         return command
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     def _parse_inject(self, rstBlock):
         """Parse inject lines.
@@ -381,7 +381,7 @@ class ParseBlocks(object):
         return parsedCmds
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 class ExtractBlocks(object):
@@ -459,7 +459,7 @@ class ExtractBlocks(object):
 
         return self.filePointer.read()
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     def get_indice_blocks(self):
         """Should fetch regex strings from the right location."""
@@ -503,9 +503,9 @@ class ExtractBlocks(object):
                        'pathBlock': pathBlocks,
                        'allBlock': allBlocks}
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #   Recursive Generator Pattern.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     def extract_codeblocks(self):
         """Initialize the generator object and start the initial parsing."""
@@ -602,7 +602,7 @@ class ExtractBlocks(object):
 
         return
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     @staticmethod
     def write_to_file(path, value):
@@ -627,9 +627,9 @@ class ExtractBlocks(object):
         for distro, command in commands.iteritems():
             ExtractBlocks.write_to_file(self.bashPath[distro], command)
 
-        return True
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
@@ -660,30 +660,19 @@ if __name__ == '__main__':
 
     for rst_file in rst_files:
 
-        parser_message = "\nError: XXX: Failed to parse %s to bash.\n\t    - "
-
         try:
             rst_file_path = os.path.join(rst_path, rst_file)
             code_blocks = ExtractBlocks(rst_file_path, bash_path)
             code_blocks.get_indice_blocks()
             code_blocks.extract_codeblocks()
 
-            if not code_blocks.write_bash_code():
-                msg = "Could not write to bash: %s" % rst_file_path
-                raise ParserErr.Rst2BashError(msg)
+            code_blocks.write_bash_code()
 
         except (ParserErr.InvalidCodeBlockError,
                 ParserErr.InvalidOperatorError,
                 ParserErr.InvalidBlockError,
                 ParserErr.MissingTagsError) as ex:
-            parser_message = parser_message + repr(ex) + "\n"
             logger.error(repr(ex))
-        except ParserErr.Rst2BashError as ex:
-            pass
-        else:
-            parser_message = "Success :): parsed %s to bash. :D"
-        finally:
-            print(parser_message % rst_file)
 
     logger.info("")
     logger.info("Output written to:")
