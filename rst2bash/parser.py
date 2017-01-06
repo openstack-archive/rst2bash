@@ -622,8 +622,6 @@ class ExtractBlocks(object):
         for distro, command in commands.iteritems():
             ExtractBlocks.write_to_file(self.bashPath[distro], command)
 
-        return True
-
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -655,30 +653,19 @@ if __name__ == '__main__':
 
     for rst_file in rst_files:
 
-        parser_message = "\nError: XXX: Failed to parse %s to bash.\n\t    - "
-
         try:
             rst_file_path = os.path.join(rst_path, rst_file)
             code_blocks = ExtractBlocks(rst_file_path, bash_path)
             code_blocks.get_indice_blocks()
             code_blocks.extract_codeblocks()
 
-            if not code_blocks.write_bash_code():
-                msg = "Could not write to bash: %s" % rst_file_path
-                raise ParserErr.Rst2BashError(msg)
+            code_blocks.write_bash_code()
 
         except (ParserErr.InvalidCodeBlockError,
                 ParserErr.InvalidOperatorError,
                 ParserErr.InvalidBlockError,
                 ParserErr.MissingTagsError) as ex:
-            parser_message = parser_message + repr(ex) + "\n"
             logger.error(repr(ex))
-        except ParserErr.Rst2BashError as ex:
-            pass
-        else:
-            parser_message = "Success :): parsed %s to bash. :D"
-        finally:
-            print(parser_message % rst_file)
 
     logger.info("")
     logger.info("Output written to:")
