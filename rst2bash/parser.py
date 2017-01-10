@@ -313,7 +313,7 @@ class ParseBlocks(object):
 
         for line in rstBlock.split('\n'):
             line = line.strip()
-            if re.search('\[[a-zA-Z_]+\]', line):
+            if re.search('\[[a-zA-Z0-9_]+\]', line):
                 operator = line[1:-1]
             elif re.search('=', line) and not re.search('^#', line):
                 line = operator + " " + line.replace("=", " ") + "\n"
