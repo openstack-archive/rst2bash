@@ -252,11 +252,16 @@ class ParseBlocks(object):
 
         command = CodeBlock()
 
-        # Simple helper function.
         def getdistro(distro):
+            """Return distros named in code block title (if any)"""
             distro = distro.replace('.. only::', '').split('or')
             return [d.strip() for d in distro]
-        distro = getdistro(distro) if distro else ["ubuntu", "obs", "rdo"]
+        # Having the list of distros hardcoded here is not ideal. The list
+        # could be generated from openstack-manuals' tox.ini or by searching
+        # for all named distros in all '.. only::' titles, or it could be part
+        # of the configuration file.
+        distro = getdistro(distro) if distro else ["debian", "ubuntu", "obs",
+                                                   "rdo"]
 
         if path:
             path = path.replace('.. path', '').strip()
