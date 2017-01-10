@@ -179,7 +179,7 @@ class CodeBlock(object):
 
         self.command = {}
 
-    def append(self, **kwargs):
+    def update(self, **kwargs):
         """Add or update values to the datastructure."""
 
         self.command.update(kwargs)
@@ -261,7 +261,7 @@ class ParseBlocks(object):
         if path:
             path = path.replace('.. path', '').strip()
 
-        command.append(distro=distro, path=path)
+        command.update(distro=distro, path=path)
 
         if 'console' in cmdType:
             action = 'console'
@@ -276,7 +276,7 @@ class ParseBlocks(object):
             msg = "Invalid command type: %s" % cmdType
             raise ParserErr.InvalidCodeBlockError(msg)
 
-        command.append(action=action, command=codeBlock)
+        command.update(action=action, command=codeBlock)
 
         return command
 
