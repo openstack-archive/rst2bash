@@ -599,11 +599,6 @@ class ExtractBlocks(object):
 
 # ------------------------------------------------------------------------------
 
-    def get_bash_code(self):
-        """Returns bashCode which is a list containing <CodeBlock>'s."""
-
-        return self.bashCode
-
     @staticmethod
     def write_to_file(path, value):
         """Static method to write given content to the file."""
@@ -667,7 +662,6 @@ if __name__ == '__main__':
             code_blocks = ExtractBlocks(rst_file_path, bash_path)
             code_blocks.get_indice_blocks()
             code_blocks.extract_codeblocks()
-            bashCode = code_blocks.get_bash_code()
 
             if not code_blocks.write_bash_code():
                 msg = "Could not write to bash: %s" % rst_file_path
