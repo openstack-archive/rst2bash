@@ -256,7 +256,8 @@ class ParseBlocks(object):
         def getdistro(distro):
             distro = distro.replace('.. only::', '').split('or')
             return [d.strip() for d in distro]
-        distro = getdistro(distro) if distro else ["ubuntu", "obs", "rdo"]
+        distro = getdistro(distro) if distro else ["debian", "ubuntu", "obs",
+                                                   "rdo"]
 
         if path:
             path = path.replace('.. path', '').strip()
