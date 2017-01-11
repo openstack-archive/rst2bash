@@ -57,9 +57,9 @@ def configure_logging():
 
 
 # TODO(dbite): Remove CamelCasing.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #   Custom data-types.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class BlockIndex(object):
     """Creates indices which describes the location of blocks in rst file.
 
@@ -225,9 +225,9 @@ class CodeBlock(object):
         return self.command['distro']
 
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Parser Logic.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class ParseBlocks(object):
     """Convert RST block to BASH code.
 
@@ -280,7 +280,7 @@ class ParseBlocks(object):
 
         return command
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     def _parse_inject(self, rstBlock):
         """Parse inject lines.
@@ -313,7 +313,7 @@ class ParseBlocks(object):
 
         for line in rstBlock.split('\n'):
             line = line.strip()
-            if re.search('\[[a-zA-Z0-9_]+\]', line):
+            if re.search(r'\[[a-zA-Z0-9_]+\]', line):
                 operator = line[1:-1]
             elif re.search('=', line) and not re.search('^#', line):
                 line = operator + " " + line.replace("=", " ") + "\n"
@@ -343,7 +343,7 @@ class ParseBlocks(object):
         return operator
 
     def _parse_code(self, rstBlock):
-        """Parse code lines.
+        r"""Parse code lines.
 
         Code-blocks containing bash code (console|mysql) are sent here. These
         are bash code or mysql etc. which are to be formatted into proper bash
@@ -365,7 +365,7 @@ class ParseBlocks(object):
         # Substitute HTML codes for '\' and '\n'
         rstBlock = rstBlock.replace("\\\n", "&#10&#10&#13")
 
-        for index in re.finditer("[#\$>].*", rstBlock):
+        for index in re.finditer(r"[#\$>].*", rstBlock):
 
             cmd = rstBlock[index.start():index.end()].replace("&#10&#10&#13",
                                                               "\\\n")
@@ -375,7 +375,7 @@ class ParseBlocks(object):
         return parsedCmds
 
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 class ExtractBlocks(object):
@@ -453,7 +453,7 @@ class ExtractBlocks(object):
 
         return self.filePointer.read()
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     def get_indice_blocks(self):
         """Should fetch regex strings from the right location."""
@@ -462,22 +462,22 @@ class ExtractBlocks(object):
         # Regex string for extracting particular bits from RST file.
         # For some reason I want to keep the generic RegEX strings.
         # XXX(dbite): Figure out the index|indices confusing terms.
-        searchAllBlocks = '''\.\.\s     # Look for '.. '
+        searchAllBlocks = r'''\.\.\s     # Look for '.. '
             (code-block::|only::|path)  # Look for required blocks
             [a-z\s/].*
             '''
-        searchDistroBlocksStart = '''\.\.\sonly::
+        searchDistroBlocksStart = r'''\.\.\sonly::
             [\sa-z].*                               # For matching all distros.
             '''
-        searchDistroBlocksEnd = '''\.\.\sendonly\\n'''      # Match end blocks.
+        searchDistroBlocksEnd = r'''\.\.\sendonly\n'''      # Match end blocks.
 
-        searchCodeBlocksStart = '''\.\.\scode-block::   # Look for code block
+        searchCodeBlocksStart = r'''\.\.\scode-block::   # Look for code block
             \s                                      # Include whitespace
             (?!end)                                 # Exclude code-block:: end
             (?:[a-z])*                              # Include everything else.
         '''
-        searchCodeBlocksEnd = '''\.\.\send\\n'''    # Look for .. end
-        searchPath = '''\.\.\spath\s.*'''           # Look for .. path
+        searchCodeBlocksEnd = r'''\.\.\send\n'''    # Look for .. end
+        searchPath = r'''\.\.\spath\s.*'''           # Look for .. path
 
         allBlocks = BlockIndex(self._get_indices(searchAllBlocks))
 
@@ -495,12 +495,11 @@ class ExtractBlocks(object):
         self.blocks = {'distroBlock': distroBlocks,
                        'codeBlock': codeBlocks,
                        'pathBlock': pathBlocks,
-                       'allBlock': allBlocks
-                       }
+                       'allBlock': allBlocks}
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #   Recursive Generator Pattern.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     def extract_codeblocks(self):
         """Initialize the generator object and start the initial parsing."""
@@ -597,7 +596,7 @@ class ExtractBlocks(object):
 
         return
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     @staticmethod
     def write_to_file(path, value):
@@ -624,7 +623,7 @@ class ExtractBlocks(object):
 
         return True
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
