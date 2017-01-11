@@ -21,7 +21,7 @@ import yaml
 import parsererr as ParserErr
 
 
-def configure_logging():
+def configure_logging(log_file):
     """Configure root logger"""
     logger = logging.getLogger()
 
@@ -43,8 +43,9 @@ def configure_logging():
     logger.addHandler(console_log_handler)
 
     # Configure log file
-    log_file = 'rst2bash.log'
-    os.remove(log_file)
+    if os.path.isfile(log_file):
+        os.remove(log_file)
+
     file_log_handler = logging.FileHandler(log_file)
     file_log_handler.setLevel(logging.DEBUG)
     file_formatter = logging.Formatter('%(process)s %(asctime)s.%(msecs)03d'
@@ -628,12 +629,12 @@ class ExtractBlocks(object):
 
 if __name__ == '__main__':
 
-    configure_logging()
-    logger = logging.getLogger()
-
     # TODO(dbite): Cleanup the main function.
     with open("rst2bash/config/parser_config.yaml", 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
+
+    configure_logging(cfg['log_file'])
+    logger = logging.getLogger()
 
     cwd = os.getcwd()
     logger.debug("cwd %s", cwd)

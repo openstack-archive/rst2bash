@@ -1,5 +1,6 @@
 description: Provides input (RST) and output (BASH) based on the configuration below.
 rst_path: build/openstack-manuals/doc/install-guide/source
+log_file: build/rst2bash.log
 bash_path:
     ubuntu: build/scripts/ubuntu
     rdo: build/scripts/rdo
