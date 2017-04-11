@@ -58,9 +58,9 @@ def configure_logging(log_file):
 
 
 # TODO(dbite): Remove CamelCasing.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #   Custom data-types.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class BlockIndex(object):
     """Creates indices which describes the location of blocks in rst file.
 
@@ -226,9 +226,9 @@ class CodeBlock(object):
         return self.command['distro']
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Parser Logic.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class ParseBlocks(object):
     """Convert RST block to BASH code.
 
@@ -286,7 +286,7 @@ class ParseBlocks(object):
 
         return command
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     def _parse_inject(self, rstBlock):
         """Parse inject lines.
@@ -381,7 +381,7 @@ class ParseBlocks(object):
         return parsedCmds
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 class ExtractBlocks(object):
@@ -459,7 +459,7 @@ class ExtractBlocks(object):
 
         return self.filePointer.read()
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     def get_indice_blocks(self):
         """Should fetch regex strings from the right location."""
@@ -503,9 +503,9 @@ class ExtractBlocks(object):
                        'pathBlock': pathBlocks,
                        'allBlock': allBlocks}
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #   Recursive Generator Pattern.
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     def extract_codeblocks(self):
         """Initialize the generator object and start the initial parsing."""
@@ -600,9 +600,8 @@ class ExtractBlocks(object):
             distroEnd = block.get_end_block(blockIndex)[1]
             self._extractblocks(distro=distro, distroEnd=distroEnd)
 
-        return
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
     @staticmethod
     def write_to_file(path, value):
@@ -616,7 +615,6 @@ class ExtractBlocks(object):
         """Writes bash code to file."""
 
         commands = defaultdict(str)
-
         newline = "\n"
 
         for code in self.bashCode:
@@ -628,7 +626,7 @@ class ExtractBlocks(object):
             ExtractBlocks.write_to_file(self.bashPath[distro], command)
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
