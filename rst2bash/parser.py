@@ -57,40 +57,39 @@ def configure_logging(log_file):
     logger.debug("Root logger configured.")
 
 
-# TODO(dbite): Remove CamelCasing.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #   Custom data-types.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class BlockIndex(object):
     """Creates indices which describes the location of blocks in rst file.
 
     These indices describe the start and end location of the strings in the rst
     file. Different indices used to parse the file are:
 
-        AllBlocks: Contains sequential index values for all required blocks.
-        CodeBlocks: Contains index values for blocks containing code.
-        PathBlocks: Contains index values for blocks containing path.
-        DistroBlocks: Contains index values for blocks containing OS.
+        All Blocks: Contains sequential index values for all required blocks.
+        Code Blocks: Contains index values for blocks containing code.
+        Path Blocks: Contains index values for blocks containing path.
+        Distro Blocks: Contains index values for blocks containing OS.
 
     These indices should provide the location to extract given blocks from the
     rst files. This class additionally provides various functionalities to
     easily carry out different tasks like iteration and more.
     """
 
-    def __init__(self, startIndex=tuple(), endIndex=tuple()):
+    def __init__(self, start_index=tuple(), end_index=tuple()):
 
-        self.startIndex = tuple(startIndex)
-        self.endIndex = tuple(endIndex)
+        self.start_index = tuple(start_index)
+        self.end_index = tuple(end_index)
 
     def get_start_block(self, index):
         '''Returns the value of the start index.'''
 
-        return self.startIndex[index]
+        return self.start_index[index]
 
     def get_end_block(self, index):
         '''Returns the value of the end index.'''
 
-        return self.endIndex[index]
+        return self.end_index[index]
 
     def get_block(self, index):
         '''Returns the value of the block from the start and the end index.'''
@@ -100,16 +99,16 @@ class BlockIndex(object):
     def get_start_index(self, block):
         '''Returns the index of the given block from the start index.'''
 
-        if self._block_exists(block, self.startIndex):
-            return self.startIndex.index(block)
+        if self._block_exists(block, self.start_index):
+            return self.start_index.index(block)
 
         return False
 
     def get_end_index(self, block):
         '''Returns the index of the given block from the end index.'''
 
-        if self._block_exists(block, self.endIndex):
-            return self.endIndex.index(block)
+        if self._block_exists(block, self.end_index):
+            return self.end_index.index(block)
 
         return False
 
@@ -123,15 +122,15 @@ class BlockIndex(object):
 
         return block in index
 
-    def get_startindex_generator(self):
-        """Returns a generator of startIndex."""
+    def get_start_index_generator(self):
+        """Returns a generator of start index."""
 
-        return self._generator(self.startIndex)
+        return self._generator(self.start_index)
 
-    def get_endindex_generator(self):
-        """Returns a generator of endIndex."""
+    def get_end_index_generator(self):
+        """Returns a generator of end index."""
 
-        return self._generator(self.endIndex)
+        return self._generator(self.end_index)
 
     def _generator(self, index):
         """Create a generator of the given index."""
@@ -143,7 +142,7 @@ class CodeBlock(object):
     """CodeBlock acts as a custom data-structure.
 
     CodeBlock defines a rst block which contains a one or more lines of code or
-    configuration files. Additionally CodeBlocks also organizes metadata about
+    configuration files. Additionally CodeBlock's also organizes metadata about
     the rst block which could be as simple as the prompt/user or the path of
     the configuration file.
 
@@ -198,7 +197,7 @@ class CodeBlock(object):
 
         command_wrapper = ''
         bashcodelines = ''
-        bashCommands = defaultdict(list)
+        bash_commands = defaultdict(list)
         newline = '\n'
         action = self.command['action']
 
@@ -216,9 +215,9 @@ class CodeBlock(object):
             bashcodelines += command_wrapper + codeline + newline
 
         for distro in self.get_distro():
-            bashCommands[distro].append(bashcodelines)
+            bash_commands[distro].append(bashcodelines)
 
-        return bashCommands
+        return bash_commands
 
     def get_distro(self):
         """Return the distribution."""
@@ -226,9 +225,9 @@ class CodeBlock(object):
         return self.command['distro']
 
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Parser Logic.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class ParseBlocks(object):
     """Convert RST block to BASH code.
 
@@ -243,7 +242,7 @@ class ParseBlocks(object):
         - Assembling all the information in CodeBlocks format.
     """
 
-    def extract_code(self, codeBlock, cmdType, distro, path):
+    def extract_code(self, code_block, cmd_type, distro, path):
         """Parse the rst block into command and extract metadata info.
 
         This method extracts all the metadata surrounding the given line of
@@ -269,26 +268,26 @@ class ParseBlocks(object):
 
         command.update(distro=distro, path=path)
 
-        if 'console' in cmdType:
+        if 'console' in cmd_type:
             action = 'console'
-            codeBlock = self._parse_code(codeBlock)
-        elif 'apache' in cmdType:
+            code_block = self._parse_code(code_block)
+        elif 'apache' in cmd_type:
             action = 'inject'
-            codeBlock = self._parse_inject(codeBlock)
-        elif 'ini' in cmdType or 'conf' in cmdType:
+            code_block = self._parse_inject(code_block)
+        elif 'ini' in cmd_type or 'conf' in cmd_type:
             action = 'config'
-            codeBlock = self._parse_config(codeBlock)
+            code_block = self._parse_config(code_block)
         else:
-            msg = "Invalid command type: %s" % cmdType
+            msg = "Invalid command type: %s" % cmd_type
             raise ParserErr.InvalidCodeBlockError(msg)
 
-        command.update(action=action, command=codeBlock)
+        command.update(action=action, command=code_block)
 
         return command
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-    def _parse_inject(self, rstBlock):
+    def _parse_inject(self, rst_block):
         """Parse inject lines.
 
         These lines are usually configuration lines which are copy pasted or
@@ -296,9 +295,9 @@ class ParseBlocks(object):
         visual appearance and easier BASH syntax generation.
         """
 
-        return [rstBlock + "\nEOL\n"]
+        return [rst_block + "\nEOL\n"]
 
-    def _parse_config(self, rstBlock):
+    def _parse_config(self, rst_block):
         """Parse configuration files.
 
         Configuration file modifications, which mostly involves setting or
@@ -315,17 +314,17 @@ class ParseBlocks(object):
         operator = ''
 
         # Only works for a specific sequence of configuration options.
-        parsedConfig = list()
+        parsed_config = list()
 
-        for line in rstBlock.split('\n'):
+        for line in rst_block.split('\n'):
             line = line.strip()
             if re.search(r'\[[a-zA-Z0-9_]+\]', line):
                 operator = line[1:-1]
             elif re.search('=', line) and not re.search('^#', line):
                 line = operator + " " + line.replace("=", " ") + "\n"
-                parsedConfig.append(line.strip())
+                parsed_config.append(line.strip())
 
-        return parsedConfig
+        return parsed_config
 
     @staticmethod
     def _get_bash_operator(operator):
@@ -348,7 +347,7 @@ class ParseBlocks(object):
 
         return operator
 
-    def _parse_code(self, rstBlock):
+    def _parse_code(self, rst_block):
         r"""Parse code lines.
 
         Code-blocks containing bash code (console|mysql) are sent here. These
@@ -363,81 +362,81 @@ class ParseBlocks(object):
          - Replace the HTML codes to it's respective ASCII/UNICODE equivalent.
         """
 
-        parsedCmds = list()
+        parsed_cmds = list()
 
-        if "mysql>" in rstBlock:
-            rstBlock = rstBlock.replace("mysql>", ">")
+        if "mysql>" in rst_block:
+            rst_block = rst_block.replace("mysql>", ">")
 
         # Substitute HTML codes for '\' and '\n'
-        rstBlock = rstBlock.replace("\\\n", "&#10&#10&#13")
+        rst_block = rst_block.replace("\\\n", "&#10&#10&#13")
 
-        for index in re.finditer(r"[#\$>].*", rstBlock):
+        for index in re.finditer(r"[#\$>].*", rst_block):
 
-            cmd = rstBlock[index.start():index.end()].replace("&#10&#10&#13",
-                                                              "\\\n")
+            cmd = rst_block[index.start():index.end()].replace("&#10&#10&#13",
+                                                               "\\\n")
             operator = self._get_bash_operator(cmd[0])
-            parsedCmds.append(operator + cmd[1:].strip())
+            parsed_cmds.append(operator + cmd[1:].strip())
 
-        return parsedCmds
+        return parsed_cmds
 
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 class ExtractBlocks(object):
     """Creates required indices form the rst code."""
 
-    def __init__(self, rstFile, bashPath):
+    def __init__(self, rst_file, bash_path):
 
-        logger.info("Processing %s.", os.path.basename(rstFile))
-        self.rstFile = self.get_file_contents(rstFile)
+        logger.info("Processing %s.", os.path.basename(rst_file))
+        self.rst_file = self.get_file_contents(rst_file)
         self.blocks = None  # Lookup table.
-        self.allBlocksIterator = None
+        self.all_blocks_iterator = None
         self.parseblocks = ParseBlocks()
-        self.bashCode = list()
-        bashFileName = os.path.basename(rstFile).replace('.rst', '.sh')
-        logger.debug("bashPath %s", bashPath)
-        self.bashPath = {distro: os.path.join(path, bashFileName)
-                         for distro, path in bashPath.iteritems()}
-        logger.debug("ExtractBlocks __init__ bashPath %s", self.bashPath)
+        self.bash_code = list()
+        bash_file_name = os.path.basename(rst_file).replace('.rst', '.sh')
+        logger.debug("bash_path %s", bash_path)
+        self.bash_path = {distro: os.path.join(path, bash_file_name)
+                          for distro, path in bash_path.iteritems()}
+        logger.debug("ExtractBlocks __init__ bash_path %s", self.bash_path)
 
     def __del__(self):
         """Proper handling of the file pointer."""
 
-        self.filePointer.close()
+        self.file_pointer.close()
 
     def index_to_line_no(self, index):
         """Return line number, given index into string"""
         # Count newline characters (no newline -> line number 1)
-        return self.rstFile.count("\n", 0, index) + 1
+        return self.rst_file.count("\n", 0, index) + 1
 
-    def _get_indices(self, regexStr):
+    def _get_indices(self, regex_str):
         """Helper function to return a tuple containing indices.
 
         The indices returned contains the location of the given blocks matched
         by the regex string. Returns the (start, end) index for the same.
         """
 
-        searchBlocks = re.compile(regexStr, re.VERBOSE)
+        search_blocks = re.compile(regex_str, re.VERBOSE)
         indices = [index.span()
-                   for index in searchBlocks.finditer(self.rstFile)]
+                   for index in search_blocks.finditer(self.rst_file)]
 
-        logger.debug("_get_indices %s %s", regexStr, indices)
+        logger.debug("_get_indices %s %s", regex_str, indices)
         return indices
 
-    def get_start_end_block(self, searchStart, searchEnd):
+    def get_start_end_block(self, search_start, search_end):
         """Search file for start and stop codes
 
         Search for start and stop codes (e.g., "only", "endonly") and
         report an error if the numbers for both don't match.
         """
-        start = self._get_indices(searchStart)
-        end = self._get_indices(searchEnd)
+        start = self._get_indices(search_start)
+        end = self._get_indices(search_end)
 
         # Log information on the indices we received
         msg = "get_start_end_block start/end mismatch:\n"
-        msg += "    regex start: {}\n".format(searchStart)
-        msg += "    regex end:   {}\n".format(searchEnd)
+        msg += "    regex start: {}\n".format(search_start)
+        msg += "    regex end:   {}\n".format(search_end)
         report = {}
         for ii in start:
             report[self.index_to_line_no(ii[0])] = "start block"
@@ -452,14 +451,14 @@ class ExtractBlocks(object):
 
         return start, end
 
-    def get_file_contents(self, filePath):
+    def get_file_contents(self, file_path):
         """Return the contents of the given file."""
 
-        self.filePointer = open(filePath, 'r')
+        self.file_pointer = open(file_path, 'r')
 
-        return self.filePointer.read()
+        return self.file_pointer.read()
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     def get_indice_blocks(self):
         """Should fetch regex strings from the right location."""
@@ -468,51 +467,51 @@ class ExtractBlocks(object):
         # Regex string for extracting particular bits from RST file.
         # For some reason I want to keep the generic RegEX strings.
         # XXX(dbite): Figure out the index|indices confusing terms.
-        searchAllBlocks = r'''\.\.\s     # Look for '.. '
+        search_all_blocks = r'''\.\.\s     # Look for '.. '
             (code-block::|only::|path)  # Look for required blocks
             [a-z\s/].*
             '''
-        searchDistroBlocksStart = r'''\.\.\sonly::
+        search_distro_blocks_start = r'''\.\.\sonly::
             [\sa-z].*                               # For matching all distros.
             '''
-        searchDistroBlocksEnd = r'''\.\.\sendonly\n'''      # Match end blocks.
+        search_distro_blocks_end = r'''\.\.\sendonly\n'''    # Match end block
 
-        searchCodeBlocksStart = r'''\.\.\scode-block::   # Look for code block
+        search_code_blocks_start = r'''\.\.\scode-block::   # Match code block
             \s                                      # Include whitespace
             (?!end)                                 # Exclude code-block:: end
             (?:[a-z])*                              # Include everything else.
         '''
-        searchCodeBlocksEnd = r'''\.\.\send\n'''    # Look for .. end
-        searchPath = r'''\.\.\spath\s.*'''           # Look for .. path
+        search_code_blocks_end = r'''\.\.\send\n'''    # Look for .. end
+        search_path = r'''\.\.\spath\s.*'''            # Look for .. path
 
-        allBlocks = BlockIndex(self._get_indices(searchAllBlocks))
+        all_blocks = BlockIndex(self._get_indices(search_all_blocks))
 
-        startIndex, endIndex = self.get_start_end_block(
-            searchDistroBlocksStart, searchDistroBlocksEnd)
-        distroBlocks = BlockIndex(startIndex, endIndex)
+        start_index, end_index = self.get_start_end_block(
+            search_distro_blocks_start, search_distro_blocks_end)
+        distro_blocks = BlockIndex(start_index, end_index)
 
-        startIndex, endIndex = self.get_start_end_block(
-            searchCodeBlocksStart, searchCodeBlocksEnd)
-        codeBlocks = BlockIndex(startIndex, endIndex)
+        start_index, end_index = self.get_start_end_block(
+            search_code_blocks_start, search_code_blocks_end)
+        code_blocks = BlockIndex(start_index, end_index)
 
-        pathBlocks = BlockIndex(self._get_indices(searchPath))
+        path_blocks = BlockIndex(self._get_indices(search_path))
 
         # Point to the blocks from a dictionary to create sensible index.
-        self.blocks = {'distroBlock': distroBlocks,
-                       'codeBlock': codeBlocks,
-                       'pathBlock': pathBlocks,
-                       'allBlock': allBlocks}
+        self.blocks = {'distroBlock': distro_blocks,
+                       'codeBlock': code_blocks,
+                       'pathBlock': path_blocks,
+                       'allBlock': all_blocks}
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #   Recursive Generator Pattern.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     def extract_codeblocks(self):
         """Initialize the generator object and start the initial parsing."""
 
         # Generate all blocks iterator
-        self.allBlocksIterator = \
-            self.blocks['allBlock'].get_startindex_generator()
+        self.all_blocks_iterator = \
+            self.blocks['allBlock'].get_start_index_generator()
 
         try:
             self._extractblocks()
@@ -527,25 +526,25 @@ class ExtractBlocks(object):
         location of the block.
         """
 
-        for blockName in 'codeBlock', 'distroBlock', 'pathBlock':
-            blockIndex = self.blocks[blockName].get_start_index(allblock)
-            if blockIndex is not False:
-                return blockName, blockIndex
+        for block_name in 'codeBlock', 'distroBlock', 'pathBlock':
+            block_index = self.blocks[block_name].get_start_index(allblock)
+            if block_index is not False:
+                return block_name, block_index
         else:
-            msg = "Invalid block name: %s" % blockName
+            msg = "Invalid block name: %s" % block_name
             raise ParserErr.InvalidBlockError(msg)
 
     # Helper function for recursive-generator pattern.
-    def _extractblocks(self, distro=None, path=None, distroEnd=None):
+    def _extractblocks(self, distro=None, path=None, distro_end=None):
         """Recursive function to sequentially parse the RST file.
 
         This method deals with traversing through the given RST file by using
         the indices generated using regex. These indices indicate the location
         of different chunks of blocks and also the distribution for the same.
 
-        AllBlocks provides the location of all the blocks and is used to
+        All Blocks provides the location of all the blocks and is used to
         recurse and give the next block location. This block can either be
-        CodeBlock, PathBlock or DistroBlock. The lookup table provides the
+        Code Block, Path Block or Distro Block. The lookup table provides the
         information about which block a given index points to and fetches
         the equivalent end index. This allows further calls to ParseBlocks
         class to process the extracted chunk of code in the correct way.
@@ -558,51 +557,53 @@ class ExtractBlocks(object):
         """
 
         try:
-            blockName, blockIndex = self._block_lookup(
-                self.allBlocksIterator.next())
+            block_name, block_index = self._block_lookup(
+                self.all_blocks_iterator.next())
         except StopIteration:
             return
 
-        block = self.blocks[blockName]
+        block = self.blocks[block_name]
 
         # TODO(dbite): Implement a mechanism for locating the exact location in
         #              the rst file at the current recursive depth. This
         #              information should then be logged and passed via. the
         #              exception traceback. Save required vars. in a global
         #              variable.
-        if distroEnd < block.get_start_block(blockIndex)[0]:
+        if distro_end < block.get_start_block(block_index)[0]:
             distro = None
 
-        if 'codeBlock' in blockName:
+        if 'code_block' in block_name:
             # Extract Code Block
             # Use path & distro variables.
-            indexStart = block.get_start_block(blockIndex)
-            indexEnd = block.get_end_block(blockIndex)
-            codeBlock = self.rstFile[indexStart[1]:indexEnd[0]].strip()
-            cmdType = self.rstFile[indexStart[0]:indexStart[1]]
-            self.bashCode.append(
-                self.parseblocks.extract_code(codeBlock,
-                                              cmdType,
+            index_start = block.get_start_block(block_index)
+            index_end = block.get_end_block(block_index)
+            code_block = self.rst_file[index_start[1]:index_end[0]].strip()
+            cmd_type = self.rst_file[index_start[0]:index_start[1]]
+            self.bash_code.append(
+                self.parseblocks.extract_code(code_block,
+                                              cmd_type,
                                               distro,
                                               path))
-            self._extractblocks(distro=distro, distroEnd=distroEnd)
+            self._extractblocks(distro=distro, distro_end=distro_end)
 
-        elif 'pathBlock' in blockName:
+        elif 'pathBlock' in block_name:
             # Get path & recurse, the next one should be CodeBlock.
-            pathIndex = block.get_start_block(blockIndex)
-            path = self.rstFile[pathIndex[0]:pathIndex[1]]
-            self._extractblocks(distro=distro, path=path, distroEnd=distroEnd)
+            path_index = block.get_start_block(block_index)
+            path = self.rst_file[path_index[0]:path_index[1]]
+            self._extractblocks(distro=distro,
+                                path=path,
+                                distro_end=distro_end)
 
-        elif 'distroBlock' in blockName:
+        elif 'distroBlock' in block_name:
             # Get distro & recurse
-            distroStart = block.get_start_block(blockIndex)
-            distro = self.rstFile[distroStart[0]:distroStart[1]]
-            distroEnd = block.get_end_block(blockIndex)[1]
-            self._extractblocks(distro=distro, distroEnd=distroEnd)
+            distro_start = block.get_start_block(block_index)
+            distro = self.rst_file[distro_start[0]:distro_start[1]]
+            distro_end = block.get_end_block(block_index)[1]
+            self._extractblocks(distro=distro, distro_end=distro_end)
 
         return
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     @staticmethod
     def write_to_file(path, value):
@@ -619,16 +620,16 @@ class ExtractBlocks(object):
 
         newline = "\n"
 
-        for code in self.bashCode:
-            codeLines = code.generate_code()
-            for distro, codeLine in codeLines.iteritems():
-                commands[distro] += newline.join(codeLine)
+        for code in self.bash_code:
+            code_lines = code.generate_code()
+            for distro, code_line in code_lines.iteritems():
+                commands[distro] += newline.join(code_line)
 
         for distro, command in commands.iteritems():
-            ExtractBlocks.write_to_file(self.bashPath[distro], command)
+            ExtractBlocks.write_to_file(self.bash_path[distro], command)
 
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
