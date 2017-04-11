@@ -600,7 +600,6 @@ class ExtractBlocks(object):
             distroEnd = block.get_end_block(blockIndex)[1]
             self._extractblocks(distro=distro, distroEnd=distroEnd)
 
-        return
 
 # -----------------------------------------------------------------------------
 
@@ -616,7 +615,6 @@ class ExtractBlocks(object):
         """Writes bash code to file."""
 
         commands = defaultdict(str)
-
         newline = "\n"
 
         for code in self.bashCode:
