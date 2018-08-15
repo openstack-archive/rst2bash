@@ -1,0 +1,9 @@
+Code-Review+2: Andreas Jaeger <jaegerandi@gmail.com>
+Code-Review+2: Petr Kovar <pkovar@redhat.com>
+Workflow+1: Petr Kovar <pkovar@redhat.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Wed, 15 Aug 2018 13:00:35 +0000
+Reviewed-on: https://review.openstack.org/591753
+Project: openstack/rst2bash
+Branch: refs/heads/master
